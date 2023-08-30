@@ -16,6 +16,7 @@ require (
 )
 
 require (
+	github.com/DenisFilisov/cacheLib v0.0.0-20230829161511-964be179d6ad // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect

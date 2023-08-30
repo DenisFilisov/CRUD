@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/DenisFilisov/cacheLib"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -21,11 +22,18 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	headerParts := strings.Split(header, " ")
 	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
 		newErrorResponse(c, http.StatusUnauthorized, "invalid auth header")
+		return
 	}
 
-	userId, err := h.services.ParseToken(headerParts[1])
+	userId, _, err := h.services.ParseToken(headerParts[1])
 	if err != nil {
 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	if cacheLib.Get(string(userId)) != headerParts[1] {
+		newErrorResponse(c, http.StatusUnauthorized, "Token not walid")
+		return
 	}
 
 	c.Set(userCtx, userId)
