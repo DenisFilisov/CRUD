@@ -2,8 +2,10 @@ package handler
 
 import (
 	"CRUD/pkg/model"
+	"github.com/DenisFilisov/cacheLib"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	time "time"
 )
 
 // @Summary SignUp
@@ -67,6 +69,11 @@ func (h *Handler) singIn(g *gin.Context) {
 		newErrorResponse(g, http.StatusInternalServerError, err.Error())
 		return
 	}
+	userId, expTime, err := h.services.Authorisation.ParseToken(token)
+
+	duration := time.Unix(expTime, 0).Sub(time.Now())
+	cacheLib.Set(string(userId), duration, token)
+
 	g.JSON(http.StatusOK, map[string]interface{}{
 		"token": token,
 	})

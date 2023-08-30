@@ -42,7 +42,6 @@ func (h *Handler) InitRouters() *gin.Engine {
 		}
 	}
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	//router.Run(":8080")
 
 	return router
 }

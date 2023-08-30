@@ -16,6 +16,8 @@ Swagger for all endpoints
 Migration tables and rollback tables
 Docker Compose file
 Make file
+Cache Lib added
+JWT tokens cashed
 
 **How to run this application:**
 1. Start docker

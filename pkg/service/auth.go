@@ -19,7 +19,7 @@ type AuthService struct {
 	repo repository.Authorisation
 }
 
-func (s *AuthService) ParseToken(accessToken string) (int, error) {
+func (s *AuthService) ParseToken(accessToken string) (int, int64, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -27,14 +27,14 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 		return []byte(signingKey), nil
 	})
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	claimes, ok := token.Claims.(*tokenClaims)
 	if !ok {
-		return 0, errors.New("token claims are not of type *tokenClaims")
+		return 0, 0, errors.New("token claims are not of type *tokenClaims")
 	}
 
-	return claimes.Userid, nil
+	return claimes.Userid, claimes.ExpiresAt, nil
 }
 
 type tokenClaims struct {

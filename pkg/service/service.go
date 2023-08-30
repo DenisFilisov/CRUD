@@ -8,7 +8,7 @@ import (
 type Authorisation interface {
 	CreateUser(user model.User) (int, error)
 	GenerateToken(username, password string) (string, error)
-	ParseToken(token string) (int, error)
+	ParseToken(token string) (int, int64, error)
 }
 
 type News interface {
