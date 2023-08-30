@@ -7,12 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt"
+	"os"
 	"time"
-)
-
-const (
-	salt       = "dngkahfkglahlfanhfla"
-	signingKey = "fpahfolkahoghalokghoa"
 )
 
 type AuthService struct {
@@ -20,6 +16,7 @@ type AuthService struct {
 }
 
 func (s *AuthService) ParseToken(accessToken string) (int, int64, error) {
+	signingKey := os.Getenv("SIGNINGKEY")
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -54,6 +51,7 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 		},
 		user.Id,
 	})
+	signingKey := os.Getenv("SIGNINGKEY")
 
 	return token.SignedString([]byte(signingKey))
 }
@@ -69,6 +67,7 @@ func (s *AuthService) CreateUser(user model.User) (int, error) {
 
 func (s *AuthService) generatePasswordHash(password string) string {
 	hash := sha1.New()
+	salt := os.Getenv("SALT")
 	hash.Write([]byte(password))
 	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
 }
