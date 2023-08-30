@@ -7,17 +7,17 @@ Users can create, read, update and delete the news. Also, users can subscribe to
 
 
 **What is contained:**
-CRUD logic
-AUTH by username/password
-JWT token for all endpoints
-Connection with DB
-Graceful shutdown
-Swagger for all endpoints
-Migration tables and rollback tables
-Docker Compose file
-Make file
-Cache Lib added
-JWT tokens cashed
+1. CRUD logic
+2. AUTH by username/password
+3. JWT token for all endpoints
+4. Connection with DB
+5. Graceful shutdown
+6. Swagger for all endpoints
+7. Migration tables and rollback tables
+8. Docker Compose file
+9. Make file
+10. Cache Lib added
+11. JWT tokens cashed
 
 **How to run this application:**
 1. Start docker
