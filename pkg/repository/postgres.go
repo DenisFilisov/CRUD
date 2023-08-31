@@ -6,9 +6,10 @@ import (
 )
 
 const (
-	usersTable     = "users"
-	newsTable      = "news"
-	followersTable = "followers"
+	usersTable        = "users"
+	newsTable         = "news"
+	followersTable    = "followers"
+	refreshTokenTable = "refresh_tokens"
 )
 
 type Config struct {

@@ -9,3 +9,7 @@ db:
 
   cache:
     ttl: 24
+
+tokens:
+  accessTokenTTL: 15
+  refreshTokenTTl: 720
