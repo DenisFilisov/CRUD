@@ -32,8 +32,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 	}
 
 	if cacheLib.Get(string(userId)) != headerParts[1] {
-		newErrorResponse(c, http.StatusUnauthorized, "Token not walid")
-		return
+		h.refreshToken(c)
 	}
 
 	c.Set(userCtx, userId)

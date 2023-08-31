@@ -7,12 +7,27 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt"
+	"github.com/spf13/viper"
+	"math/rand"
 	"os"
-	"time"
+	time "time"
 )
 
 type AuthService struct {
 	repo repository.Authorisation
+}
+
+func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
+	userId, err := s.repo.CheckRefreshToken(refreshToken)
+	if err != nil {
+		return "", "", err
+	}
+	user, err := s.repo.GetUserById(userId)
+	if err != nil {
+		return "", "", err
+	}
+
+	return s.GenerateTokens(refreshToken, user)
 }
 
 func (s *AuthService) ParseToken(accessToken string) (int, int64, error) {
@@ -39,21 +54,53 @@ type tokenClaims struct {
 	Userid int `json:"user_id"`
 }
 
-func (s *AuthService) GenerateToken(username, password string) (string, error) {
+func (s *AuthService) FindUserByUsernameAndPswd(username, password string) (model.User, error) {
 	user, err := s.repo.FindUserByUserNameAndPswd(username, s.generatePasswordHash(password))
 	if err != nil {
-		return "", err
+		return model.User{}, err
 	}
+	return user, nil
+}
+
+func (s *AuthService) GenerateTokens(oldToken string, user model.User) (string, string, error) {
+
+	accessTokenTTL := time.Duration(viper.GetInt("tokens.accessTokenTTL"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 12).Unix(),
+			ExpiresAt: time.Now().Add(time.Minute * accessTokenTTL).Unix(),
 			IssuedAt:  time.Now().Unix(),
 		},
 		user.Id,
 	})
 	signingKey := os.Getenv("SIGNINGKEY")
 
-	return token.SignedString([]byte(signingKey))
+	accessToken, err := token.SignedString([]byte(signingKey))
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := generateRefreshToken()
+	if err != nil {
+		return "", "", err
+	}
+
+	err = s.repo.SaveRefreshToken(oldToken, refreshToken, user.Id)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func generateRefreshToken() (string, error) {
+	sl := make([]byte, 32)
+
+	s := rand.NewSource(time.Now().Unix())
+	r := rand.New(s)
+	if _, err := r.Read(sl); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", sl), nil
 }
 
 func NewAuthService(repo repository.Authorisation) *AuthService {

@@ -34,6 +34,11 @@ definitions:
     required:
     - newsId
     type: object
+  handler.token:
+    properties:
+      token:
+        type: string
+    type: object
   model.News:
     properties:
       description:
@@ -386,6 +391,41 @@ paths:
       summary: get All Followers By News ID
       tags:
       - subscribers
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: refreshToken
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.token'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: refreshToken
+      tags:
+      - auth
   /auth/sign-in:
     post:
       consumes:
@@ -405,7 +445,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: integer
+            $ref: '#/definitions/handler.token'
         "400":
           description: Bad Request
           schema:
@@ -443,8 +483,6 @@ paths:
       responses:
         "200":
           description: OK
-          schema:
-            type: integer
         "400":
           description: Bad Request
           schema:

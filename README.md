@@ -18,6 +18,7 @@ Users can create, read, update and delete the news. Also, users can subscribe to
 9. Make file
 10. Cache Lib added
 11. JWT tokens cashed
+12. RefreshToken Realisation
 
 **How to run this application:**
 1. Start docker

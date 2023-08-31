@@ -2,10 +2,18 @@ package handler
 
 import (
 	"CRUD/pkg/model"
+	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/DenisFilisov/cacheLib"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 	time "time"
+)
+
+const (
+	Cookie = "Cookie"
 )
 
 // @Summary SignUp
@@ -15,7 +23,7 @@ import (
 // @Accept  json
 // @Produce  json
 // @Param input body model.User true "account info"
-// @Success 200 {integer} integer 1
+// @Success 200
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
@@ -30,6 +38,10 @@ func (h *Handler) singUp(g *gin.Context) {
 
 	id, err := h.services.Authorisation.CreateUser(input)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			newErrorResponse(g, http.StatusBadRequest, "Wrong username or password")
+			return
+		}
 		newErrorResponse(g, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -44,6 +56,10 @@ type singIn struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type token struct {
+	Token string `json:"token"`
+}
+
 // @Summary SignIn
 // @Tags auth
 // @Description login
@@ -51,7 +67,7 @@ type singIn struct {
 // @Accept  json
 // @Produce  json
 // @Param input body singIn true "credentials"
-// @Success 200 {integer} integer 1
+// @Success 200 {object} token
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
@@ -64,17 +80,60 @@ func (h *Handler) singIn(g *gin.Context) {
 		return
 	}
 
-	token, err := h.services.Authorisation.GenerateToken(input.Username, input.Password)
+	user, err := h.services.Authorisation.FindUserByUsernameAndPswd(input.Username, input.Password)
+	if err != nil {
+		newErrorResponse(g, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	accessToken, refreshToken, err := h.services.Authorisation.GenerateTokens("", user)
 	if err != nil {
 		newErrorResponse(g, http.StatusInternalServerError, err.Error())
 		return
 	}
-	userId, expTime, err := h.services.Authorisation.ParseToken(token)
+	userId, expTime, err := h.services.Authorisation.ParseToken(accessToken)
 
 	duration := time.Unix(expTime, 0).Sub(time.Now())
-	cacheLib.Set(string(userId), duration, token)
+	cacheLib.Set(string(userId), duration, accessToken)
 
-	g.JSON(http.StatusOK, map[string]interface{}{
-		"token": token,
-	})
+	var token token
+	token.Token = accessToken
+	g.Header("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
+	g.JSON(http.StatusOK, token)
+}
+
+// @Summary refreshToken
+// @Tags auth
+// @Description refreshToken
+// @RefreshToken string
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} token
+// @Failure 400,401,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /auth/refresh-token [post]
+func (h *Handler) refreshToken(g *gin.Context) {
+	refreshToken := g.GetHeader(Cookie)
+
+	if refreshToken == "" {
+		newErrorResponse(g, http.StatusBadRequest, "Wrong refreshToken in Cookies")
+		return
+	}
+	t := strings.Split(refreshToken, "=")
+	if len(t) != 2 || t[0] != "refresh-token" {
+		newErrorResponse(g, http.StatusBadRequest, "Wrong refreshToken in Cookies")
+		return
+	}
+
+	accessToken, refreshToken, err := h.services.RefreshToken(t[1])
+	if err != nil {
+		newErrorResponse(g, http.StatusUnauthorized, "can't refresh token ")
+		return
+	}
+
+	var token token
+	token.Token = accessToken
+	g.Header("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
+	g.JSON(http.StatusOK, token)
 }
