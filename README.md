@@ -26,3 +26,12 @@ Users can create, read, update and delete the news. Also, users can subscribe to
 3. make migrate 
 4. go run cmd/main.go
 
+
+For start application you should add to .env file some variables
+```dotenv
+DB_PASSWORD=postgres
+
+SALT=dngkahfkglahlfanhfla
+SIGNINGKEY=fpahfolkahoghalokghoa
+
+```
