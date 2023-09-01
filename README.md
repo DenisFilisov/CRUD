@@ -4,6 +4,7 @@
 The main idea is to create a service with authorization by JWT token.
 Also in this service we have News and Followers entities.
 Users can create, read, update and delete the news. Also, users can subscribe to news and unsubscribe from news.
+All logs processed throw the Queue. (Kafka)
 
 
 **What is contained:**
@@ -19,6 +20,8 @@ Users can create, read, update and delete the news. Also, users can subscribe to
 10. Cache Lib added
 11. JWT tokens cashed
 12. RefreshToken Realisation
+13. Kafka implemented
+14. Log Handler implemented
 
 **How to run this application:**
 1. Start docker
@@ -33,5 +36,4 @@ DB_PASSWORD=postgres
 
 SALT=dngkahfkglahlfanhfla
 SIGNINGKEY=fpahfolkahoghalokghoa
-
 ```

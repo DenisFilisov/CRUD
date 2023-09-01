@@ -3,6 +3,8 @@ package service
 import (
 	"CRUD/pkg/model"
 	"CRUD/pkg/repository"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/sirupsen/logrus"
 )
 
 type Authorisation interface {
@@ -27,16 +29,22 @@ type Subscribers interface {
 	GetAllSubscribersByNewsID(id int) ([]string, error)
 }
 
+type Kafka interface {
+	SentMessage(message *logrus.Entry)
+}
+
 type Service struct {
 	Authorisation
 	News
 	Subscribers
+	Kafka
 }
 
-func NewService(repos *repository.Repository) *Service {
+func NewService(repos *repository.Repository, producer *kafka.Producer, producerChan chan kafka.Event) *Service {
 	return &Service{
 		Authorisation: NewAuthService(repos.Authorisation),
 		News:          NewNewsService(repos.News),
 		Subscribers:   NewSubscriberService(repos.Subscribers, repos.News),
+		Kafka:         NewKafkaSender(producerChan, producer),
 	}
 }
