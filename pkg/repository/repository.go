@@ -8,6 +8,9 @@ import (
 type Authorisation interface {
 	CreateUser(user model.User) (int, error)
 	FindUserByUserNameAndPswd(username, password string) (model.User, error)
+	GetUserById(userId int) (model.User, error)
+	SaveRefreshToken(string, string, int) error
+	CheckRefreshToken(refreshToken string) (int, error)
 }
 
 type News interface {

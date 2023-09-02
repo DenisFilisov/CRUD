@@ -1,3 +1,6 @@
+application:
+  name: crud
+
 port: "8080"
 
 db:
@@ -9,3 +12,15 @@ db:
 
   cache:
     ttl: 24
+
+tokens:
+  accessTokenTTL: 15
+  refreshTokenTTl: 720
+
+
+kafka:
+  bootstrap_servers: "localhost:29092"
+  sasl_mechanisms: "PLAIN"
+  acks: "all"
+  topics:
+    producer: "logs"
