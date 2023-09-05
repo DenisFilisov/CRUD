@@ -39,14 +39,14 @@ func (h *Handler) singUp(g *gin.Context) {
 	id, err := h.services.Authorisation.CreateUser(input)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			newErrorResponse(g, http.StatusBadRequest, "Wrong username or password")
+			newErrorResponse(g, http.StatusBadRequest, "Username is taken")
 			return
 		}
 		newErrorResponse(g, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	g.JSON(http.StatusOK, map[string]interface{}{
+	g.JSON(http.StatusCreated, map[string]interface{}{
 		"id": id,
 	})
 }
@@ -94,7 +94,7 @@ func (h *Handler) singIn(g *gin.Context) {
 	userId, expTime, err := h.services.Authorisation.ParseToken(accessToken)
 
 	duration := time.Unix(expTime, 0).Sub(time.Now())
-	cacheLib.Set(string(userId), duration, accessToken)
+	cacheLib.Set(fmt.Sprint(userId), duration, accessToken)
 
 	var token token
 	token.Token = accessToken

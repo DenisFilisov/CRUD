@@ -22,6 +22,7 @@ All logs processed throw the Queue. (Kafka)
 12. RefreshToken Realisation
 13. Kafka implemented
 14. Log Handler implemented
+15. Unit tests for auth handlers 
 
 **How to run this application:**
 1. Start docker
