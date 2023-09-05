@@ -7,6 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 type Authorisation interface {
 	CreateUser(user model.User) (int, error)
 	GenerateTokens(oldToken string, user model.User) (string, string, error)

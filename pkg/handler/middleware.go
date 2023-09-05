@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/DenisFilisov/cacheLib"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -31,7 +32,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		return
 	}
 
-	if cacheLib.Get(string(userId)) != headerParts[1] {
+	if cacheLib.Get(fmt.Sprint(userId)) != headerParts[1] {
 		h.refreshToken(c)
 	}
 
